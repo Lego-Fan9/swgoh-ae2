@@ -77,7 +77,7 @@
     <ProjectReference Include="..\AssetStudio\AssetStudioFBXWrapper\AssetStudioFBXWrapper.csproj" /> -->
     <ProjectReference Include="..\AssetStudio\AssetStudioUtility\AssetStudioUtility.csproj" />
     <ProjectReference Include="..\AssetStudio\AssetStudio\AssetStudio.csproj" />
-    <ProjectReference Include="..\AssetStudio\AssetStudioCLI.csproj"
+    <ProjectReference Include="..\AssetStudio\AssetStudioCLI.csproj">
   </ItemGroup>
 
 </Project>
