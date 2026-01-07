@@ -54,7 +54,7 @@
     <EmbeddedResource Include="x64\PCK_Tools_Native_win\ww2ogg.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="x64\Texture2DDecoderNative.dll">
+    <!-- <EmbeddedResource Include="x64\Texture2DDecoderNative.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="x64\libTexture2DDecoderNative.so">
@@ -62,7 +62,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="x86\Texture2DDecoderNative.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
+    </EmbeddedResource> -->
   </ItemGroup>
 
   <ItemGroup>
@@ -73,10 +73,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AssetStudio\AssetStudio.PInvoke\AssetStudio.PInvoke.csproj" />
-    <ProjectReference Include="..\AssetStudio\AssetStudioFBXWrapper\AssetStudioFBXWrapper.csproj" />
+    <!-- <ProjectReference Include="..\AssetStudio\AssetStudio.PInvoke\AssetStudio.PInvoke.csproj" />
+    <ProjectReference Include="..\AssetStudio\AssetStudioFBXWrapper\AssetStudioFBXWrapper.csproj" /> -->
     <ProjectReference Include="..\AssetStudio\AssetStudioUtility\AssetStudioUtility.csproj" />
     <ProjectReference Include="..\AssetStudio\AssetStudio\AssetStudio.csproj" />
+    <ProjectReference Include="..\AssetStudio\AssetStudioCLI.csproj"
   </ItemGroup>
 
 </Project>
