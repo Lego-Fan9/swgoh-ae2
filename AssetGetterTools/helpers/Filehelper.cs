@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Linq;
 using System.Threading;
 using AssetStudio;
@@ -115,7 +116,7 @@ namespace AssetGetterTools
                     if (exportSprite)
                     {
                         exportableSprites.Add(assetItem);
-                    } 
+                    }
                     if (exportable)
                     {
                         exportableAssets.Add(assetItem);
@@ -137,29 +138,30 @@ namespace AssetGetterTools
 
         public void verifytextureDLLisReady()
         {
-            var dllDir = GetDirectedDllDirectory();
+            var localPath = Environment.ProcessPath;
+            var localDir = Path.GetDirectoryName(localPath);
+            var dllName = GetTextureDLLName();
 
-            var fulFileName = $"{dllDir}/Texture2DDecoderNative.dll";
+            var fulFileName = Path.Combine(localDir, dllName);
 
             Console.WriteLine($"Checking for file {fulFileName}");
 
             if (!File.Exists(fulFileName))
             {
-                throw new Exception($"The File Texture2DDecoderNative.dll could not be found. Make sure it exists in the folder '{dllDir}'");
+                throw new Exception($"The File {dllName} could not be found. Make sure it exists in the folder '{localDir}'");
             }
         }
 
-        private static string GetDirectedDllDirectory()
+        private static string GetTextureDLLName()
         {
-            var localPath = Process.GetCurrentProcess().MainModule.FileName;
-            var localDir = Path.GetDirectoryName(localPath);
+            string dllName = "Texture2DDecoderNative";
 
-            var subDir = Environment.Is64BitProcess ? "x64" : "x86";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return $"{dllName}.dll";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return $"lib{dllName}.so";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return $"lib{dllName}.dylib";
 
-            var directedDllDir = Path.Combine(localDir, subDir);
-
-            return directedDllDir;
+            throw new PlatformNotSupportedException();
         }
-        
+
     }
 }
