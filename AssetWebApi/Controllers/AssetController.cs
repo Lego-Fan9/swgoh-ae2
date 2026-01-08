@@ -1,5 +1,7 @@
 using AssetGetterTools.models;
 using Microsoft.AspNetCore.Mvc;
+using AssetWebApi.Helpers;
+using AssetWebApi.Models;
 
 namespace AssetWebApi.Controllers
 {
@@ -73,6 +75,78 @@ namespace AssetWebApi.Controllers
             var singleFilePath = mainProgram.getSingleTextureIfExists(assetName, forceReDownload);
             var fileContent = System.IO.File.ReadAllBytes(singleFilePath);
             return File(fileContent, "application/octet-stream", Path.GetFileName(singleFilePath));
+        }
+
+        /// <summary>
+        /// Gets a bundle of images for a given name and returns as json
+        /// </summary>
+        /// <param name="assetName">the name of the asset to download</param>
+        /// <param name="version">the assetversion. you can get it via Metadata in comlink.</param>
+        /// <param name="forceReDownload">Optional parameter (default = false). true Forces a re-download from the CG Server. Otherwise it uses the cache if possible.</param>
+        /// <param name="getSprites">Optional paramter (default = false) true will send sprites from the server.</param>
+        /// <returns></returns>
+        [HttpGet("json")]
+        public async Task<ActionResult<ImageListDTO>> GetBundleJson(string assetName, int version, bool forceReDownload = false, AssetOS assetOS = AssetOS.Windows, bool getSprites = false)
+        {
+            var defaultSettings = DefaultSettings.GetDefaultSettings();
+            using (var temp = new TempFolder(defaultSettings.workingDirectory))
+            {
+                var mainProgram = new MainProgram(assetOS);
+                mainProgram.AssetVersion = version.ToString();
+                mainProgram.exportSpriteAtlases = getSprites;
+                mainProgram.workingFolder = temp.Folder;
+                mainProgram.targetFolder = Path.Combine(temp.Folder, "OutPut");
+                mainProgram.fileHelper.workingFolder = temp.Folder;
+                mainProgram.getSingleTextureIfExists(assetName, forceReDownload);
+
+                ImageListDTO response = new ImageListDTO(assetName);
+
+                foreach (var entry in Directory.EnumerateFiles(mainProgram.targetFolder, "*", SearchOption.AllDirectories))
+                {
+                    if (Path.GetExtension(entry) != ".png")
+                    {
+                        continue;
+                    }
+
+                    string fileName = Path.GetFileName(entry);
+                    string folderName = Path.GetDirectoryName(entry) ?? string.Empty;
+
+                    
+                    var possibleSpriteAtlasName = string.Empty;
+
+                    if (folderName.Contains("sprites"))
+                    {
+                        var pathSegments = folderName // split at \ and / based on OS
+                            .Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                            .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                        possibleSpriteAtlasName = pathSegments[^1];
+                    }
+
+                    try
+                    {
+                        byte[] imageBytes = await System.IO.File.ReadAllBytesAsync(entry);
+                        string imageBase64 = Convert.ToBase64String(imageBytes);
+
+                        response.Images.Add(new ImageDTO
+                        {
+                            FileName = fileName,
+                            Data = "data:image/png;base64," + imageBase64,
+                            FromAtlas = possibleSpriteAtlasName,
+                            IsValid = true,
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error loading {fileName}: {ex.Message}");
+                        response.Images.Add(new ImageDTO
+                        {
+                            FileName = fileName,
+                        });
+                    }
+                }
+
+                return Ok(response);
+            }
         }
     }
 }

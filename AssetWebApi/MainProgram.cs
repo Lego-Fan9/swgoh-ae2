@@ -18,6 +18,7 @@ namespace AssetWebApi
         public string AssetVersion { get; set; }
 
         public bool exportMeshes { get; set; }
+        public bool exportSpriteAtlases { get; set; }
 
         public string AssetDownloadUrl
         {
@@ -38,6 +39,7 @@ namespace AssetWebApi
             this.targetFolder = defaultSettings.defaultOutputDirectory;
             this.AssetVersion = defaultSettings.defaultAssetVersion;
             this.exportMeshes = defaultSettings.exportMeshes;
+            this.exportSpriteAtlases = defaultSettings.exportSpriteAtlases;
 
             this.fileHelper = new Filehelper();
             this.fileHelper.workingFolder = defaultSettings.workingDirectory;
@@ -169,7 +171,7 @@ namespace AssetWebApi
                 else
                 {
                     var downloadedFile = DownloadAssetBundle(assetName);
-                    fileHelper.UnpackBundle(downloadedFile, $"{targetFolder}/{prefix}", assetName, false, this.exportMeshes);
+                    fileHelper.UnpackBundle(downloadedFile, $"{targetFolder}/{prefix}", assetName, false, this.exportMeshes, false, false, this.exportSpriteAtlases);
                     return fullFilePath;
                 }
 
@@ -189,7 +191,7 @@ namespace AssetWebApi
             {
                 var prefix = assetName.Split('_')[0];
                 var downloadedFile = DownloadAssetBundle(assetName);
-                fileHelper.UnpackBundle(downloadedFile, $"{targetFolder}/{prefix}", assetName, false, this.exportMeshes);
+                fileHelper.UnpackBundle(downloadedFile, $"{targetFolder}/{prefix}", assetName, false, this.exportMeshes, false, false, this.exportSpriteAtlases);
                 return $"{targetFolder}/{prefix}";
             }
             catch (Exception ex)
