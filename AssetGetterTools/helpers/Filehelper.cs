@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Reflection;
 using System.Threading;
 using AssetStudio;
 using AssetStudio.PInvoke;
@@ -137,29 +139,22 @@ namespace AssetGetterTools
 
         public void verifytextureDLLisReady()
         {
-            var dllDir = GetDirectedDllDirectory();
-
-            var fulFileName = $"{dllDir}/Texture2DDecoderNative.dll";
-
-            Console.WriteLine($"Checking for file {fulFileName}");
-
-            if (!File.Exists(fulFileName))
+            try {
+            IntPtr handle = NativeLibrary.Load("Texture2DDecoderNative", Assembly.GetExecutingAssembly(), DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.UseDllDirectoryForDependencies);
+            NativeLibrary.Free(handle);
+            } 
+            catch (DllNotFoundException ex)
             {
-                throw new Exception($"The File Texture2DDecoderNative.dll could not be found. Make sure it exists in the folder '{dllDir}'");
+                throw new Exception($"Could not find Texture2DDecoder! Please ensure it is at the root of your project directory. Full logs:\n{ex}");
+            } 
+            catch (BadImageFormatException ex)
+            {
+                throw new Exception($"Found Texture2DDecoderNative but it is not able to be run. Could mean incorrect or unsupported operating system or architecture: Full error:\n{ex}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unhandled exception verifying TextureDDecoder:\n{ex}");
             }
         }
-
-        private static string GetDirectedDllDirectory()
-        {
-            var localPath = Process.GetCurrentProcess().MainModule.FileName;
-            var localDir = Path.GetDirectoryName(localPath);
-
-            var subDir = Environment.Is64BitProcess ? "x64" : "x86";
-
-            var directedDllDir = Path.Combine(localDir, subDir);
-
-            return directedDllDir;
-        }
-        
     }
 }
