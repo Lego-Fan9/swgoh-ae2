@@ -140,16 +140,17 @@ namespace AssetGetterTools
         public void verifytextureDLLisReady()
         {
             try {
-            IntPtr handle = NativeLibrary.Load("Texture2DDecoderNative", Assembly.GetExecutingAssembly(), DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.UseDllDirectoryForDependencies);
-            NativeLibrary.Free(handle);
+                // typeof(Filehelper).Assembly is used as recommended by https://learn.microsoft.com/en-us/dotnet/api/system.reflection.assembly.getexecutingassembly?view=net-8.0 
+                nint handle = NativeLibrary.Load("Texture2DDecoderNative", typeof(Filehelper).Assembly, DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.UseDllDirectoryForDependencies);
+                NativeLibrary.Free(handle);
             } 
             catch (DllNotFoundException ex)
             {
-                throw new Exception($"Could not find Texture2DDecoder! Please ensure it is at the root of your project directory. Full logs:\n{ex}");
+                throw new Exception($"Could not find Texture2DDecoderNative! Please ensure it is at the root of your project directory. Full logs:\n{ex}");
             } 
             catch (BadImageFormatException ex)
             {
-                throw new Exception($"Found Texture2DDecoderNative but it is not able to be run. Could mean incorrect or unsupported operating system or architecture: Full error:\n{ex}");
+                throw new Exception($"Found Texture2DDecoderNative but it is not able to be run. Could mean incorrect or unsupported operating system or architecture. Full error:\n{ex}");
             }
             catch (Exception ex)
             {
