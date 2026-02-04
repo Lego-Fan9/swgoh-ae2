@@ -1,6 +1,7 @@
 using AssetGetterTools.models;
 using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
+using AssetWebApi.Helpers;
 
 namespace AssetWebApi.Controllers
 {
@@ -87,7 +88,8 @@ namespace AssetWebApi.Controllers
         [HttpGet("zip")]
         public FileStreamResult GetZip(string assetName, int version, bool forceReDownload = false, bool exportSpriteAtlases = false, AssetOS assetOS = AssetOS.Windows)
         {
-            var defaultSettings = DefaultSettings.GetDefaultSettings();
+            var defaultSettings = DefaultSettings.GetDefaultSettings() ?? 
+                throw new Exception("Could not load DefaultSettings. settings.json may not exist");
             using (var temp = new TempFolder(defaultSettings.defaultOutputDirectory))
             {
                 var mainProgram = new MainProgram(assetOS);
