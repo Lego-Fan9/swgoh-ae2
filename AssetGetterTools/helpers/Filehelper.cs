@@ -18,9 +18,14 @@ namespace AssetGetterTools
         public static List<AssetItem> exportableAssets = new List<AssetItem>();
         public static List<AssetItem> exportableSprites = new List<AssetItem>();
 
+        private static readonly Lazy<bool> _foundTextureDll = new(() =>
+        {
+            return verifytextureDLLisReady();
+        }, isThreadSafe: true);
+
         public Filehelper()
         {
-            verifytextureDLLisReady();
+            _ = _foundTextureDll.Value;
         }
 
         public void UnpackBundle(string inFile, string targetFolder, string assetName, bool exportShader = false, bool exportMeshes = false, bool exportAnimator = false, bool exportMonoBehavior = false, bool exportSpriteAtlases = false)
@@ -117,7 +122,7 @@ namespace AssetGetterTools
                     if (exportSprite)
                     {
                         exportableSprites.Add(assetItem);
-                    } 
+                    }
                     if (exportable)
                     {
                         exportableAssets.Add(assetItem);
@@ -137,25 +142,29 @@ namespace AssetGetterTools
 
         }
 
-        public void verifytextureDLLisReady()
+        public static bool verifytextureDLLisReady()
         {
-            try {
+            try
+            {
                 // typeof(Filehelper).Assembly is used as recommended by https://learn.microsoft.com/en-us/dotnet/api/system.reflection.assembly.getexecutingassembly?view=net-8.0 
                 nint handle = NativeLibrary.Load("Texture2DDecoderNative", typeof(Filehelper).Assembly, DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.UseDllDirectoryForDependencies);
                 NativeLibrary.Free(handle);
-            } 
+            }
             catch (DllNotFoundException ex)
             {
-                throw new Exception($"Could not find Texture2DDecoderNative! Please ensure it is at the root of your project directory. Full logs:\n{ex}");
-            } 
+                throw new DllNotFoundException($"Could not find Texture2DDecoderNative! Please ensure it is at the root of your project directory. Full logs:\n{ex}");
+            }
             catch (BadImageFormatException ex)
             {
-                throw new Exception($"Found Texture2DDecoderNative but it is not able to be run. Could mean incorrect or unsupported operating system or architecture. Full error:\n{ex}");
+                throw new BadImageFormatException($"Found Texture2DDecoderNative but it is not able to be run. Could mean incorrect or unsupported operating system or architecture. Full error:\n{ex}");
             }
             catch (Exception ex)
             {
                 throw new Exception($"Unhandled exception verifying TextureDDecoder:\n{ex}");
             }
+
+            Console.WriteLine("Found Texture2DDecoderNative");
+            return true;
         }
     }
 }
