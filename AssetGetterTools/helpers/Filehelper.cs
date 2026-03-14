@@ -21,7 +21,7 @@ namespace AssetGetterTools
             verifytextureDLLisReady();
         }
 
-        public void UnpackBundle(string inFile, string targetFolder, string assetName, bool exportShader = false, bool exportMeshes = false, bool exportAnimator = false, bool exportMonoBehavior = false, bool exportSpriteAtlases = false)
+        public void UnpackBundle(string inFile, string targetFolder, string assetName, bool exportShader = false, bool exportMeshes = false, bool exportAnimator = false, bool exportMonoBehavior = false, bool exportSpriteAtlases = false, bool exportFonts = false)
         {
             Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             Directory.CreateDirectory(targetFolder);
@@ -72,7 +72,19 @@ namespace AssetGetterTools
                         case Mesh _:
                         case TextAsset _:
                         case AnimationClip _:
-                        case Font _:
+                            break;
+                        case Font m_Font:
+                            if (m_Font.m_Name == "EmptyFont")
+                            {
+                                assetItem.Text = $"{m_Font.m_Name}_{m_Font.m_PathID}";
+                            }
+                            else 
+                            {
+                                assetItem.Text = m_Font.m_Name;
+                            }
+
+                            exportable = exportFonts;
+                            break;
                         case MovieTexture _:
                         case Sprite _:
                             assetItem.Text = ((NamedObject)asset).m_Name;

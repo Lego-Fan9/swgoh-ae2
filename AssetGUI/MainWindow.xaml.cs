@@ -51,6 +51,9 @@ namespace AssetGUI
         public List<string> prefixes { get; set; }
         public string SelectedPrefix { get; set; }
 
+        private static readonly (int Width, int Height) WindowSizeNoManifest = (1000, 325);
+        private static readonly (int Width, int Height) WindowSizeAfterManifest = (1000, 650);
+
         public MainWindow()
         {
             //Microsoft.UI.Xaml.Controls.TextBlock
@@ -59,7 +62,7 @@ namespace AssetGUI
             //Console.SetOut();
 
             this.mainProgram = new MainProgram();
-            SetWindowSize(1000, 410);
+            SetWindowSize(WindowSizeNoManifest.Width, WindowSizeNoManifest.Height);
             setVisibilityOfSecondaryRows(false);
             this.Title = "AssetGUI";
 
@@ -76,6 +79,12 @@ namespace AssetGUI
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AllocConsole();
+
+        private void tbVersion_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            setVisibilityOfSecondaryRows(false);
+            SetWindowSize(WindowSizeNoManifest.Width, WindowSizeNoManifest.Height);
+        }
 
         private void btSetExportPath_Click(object sender, RoutedEventArgs e)
         {
@@ -172,7 +181,7 @@ namespace AssetGUI
             prefixes.AddRange(mainProgram.GetPrefixesFromManifest());
             SelectedPrefix = prefixes.FirstOrDefault();
 
-            SetWindowSize(1000, 650);
+            SetWindowSize(WindowSizeAfterManifest.Width, WindowSizeAfterManifest.Height);
             setVisibilityOfSecondaryRows(true);
         }
 
@@ -183,10 +192,12 @@ namespace AssetGUI
             if (visible)
             {
                 gridLength = new GridLength(35);
+                checkBoxContainer.Visibility = Visibility.Visible;
             }
             else
             {
                 gridLength = new GridLength(0);
+                checkBoxContainer.Visibility = Visibility.Collapsed;
             }
 
             rowDownloadSingle.Height = gridLength;
@@ -261,6 +272,11 @@ namespace AssetGUI
         private void cbSpriteAtlases_Checked(object sender, RoutedEventArgs e)
         {
             this.mainProgram.exportSpriteAtlases = this.cbSpriteAtlases.IsChecked.Value;
+        }
+
+        private void cbFonts_Checked(object sender, RoutedEventArgs e)
+        {
+            this.mainProgram.exportFonts = this.cbFonts.IsChecked.Value;
         }
     }
 }

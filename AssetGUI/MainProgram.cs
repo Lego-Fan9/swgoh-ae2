@@ -27,6 +27,7 @@ namespace AssetGUI
         public bool exportAnimator { get; set; }
         public bool exportMonoBehaviours { get; set; }
         public bool exportSpriteAtlases { get; set; }
+        public bool exportFonts { get; set; }
 
         public string AssetDownloadUrl
         {
@@ -162,7 +163,7 @@ namespace AssetGUI
             {
                 var prefix = assetName.Split('_')[0];
                 var downloadedFile = DownloadAssetBundle(assetName);
-                fileHelper.UnpackBundle(downloadedFile, $"{targetFolder}/{prefix}", assetName, this.exportShader, this.exportMeshes, this.exportAnimator, this.exportMonoBehaviours, this.exportSpriteAtlases);
+                fileHelper.UnpackBundle(downloadedFile, $"{targetFolder}/{prefix}", assetName, this.exportShader, this.exportMeshes, this.exportAnimator, this.exportMonoBehaviours, this.exportSpriteAtlases, this.exportFonts);
                 Console.WriteLine($"Done exportSingleFile!");
             }
             catch (Exception ex)
