@@ -39,6 +39,17 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(filePath, true);
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowCors", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

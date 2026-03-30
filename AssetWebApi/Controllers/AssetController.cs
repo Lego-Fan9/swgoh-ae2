@@ -35,13 +35,25 @@ namespace AssetWebApi.Controllers
         /// <param name="version">the assetversion. you can get it via Metadata in comlink.</param>
         /// <returns></returns>
         [HttpGet("list")]
-        public IEnumerable<string> Get(int version, AssetOS assetOS = AssetOS.Windows)
+        public List<string> Get(int version, AssetOS assetOS = AssetOS.Windows)
         {
             var mainProgram = new MainProgram(assetOS);
             mainProgram.AssetVersion = version.ToString();
-            return mainProgram.GetAssetsFromManifest();
+            var assets = mainProgram.GetAssetsFromManifest();
+
+            List<string> returnable = [];
+            foreach (var asset in assets)
+            {
+                if (asset.StartsWith("charui"))
+                {
+                    returnable.Add(asset);
+                }
+            }
+
+            return returnable;
         }
 
+        /*
         /// <summary>
         /// Lists all possible Assets for a specific version
         /// </summary>
@@ -56,7 +68,7 @@ namespace AssetWebApi.Controllers
             var mainProgram = new MainProgram(assetOS);
             mainProgram.AssetVersion = version.ToString();
             return mainProgram.diffAssetVersions(diffVersion.ToString(), diffType, prefix); ;
-        }
+        }*/
 
         /// <summary>
         /// Gets a Texture asset (image) for a given Name
@@ -66,8 +78,13 @@ namespace AssetWebApi.Controllers
         /// <param name="forceReDownload">Optional parameter (default = false). true Forces a re-download from the CG Server. Otherwise it uses the cache if possible.</param>
         /// <returns></returns>
         [HttpGet("single")]
-        public FileContentResult Get(string assetName, int version, bool forceReDownload = false, AssetOS assetOS = AssetOS.Windows)
+        public IActionResult Get(string assetName, int version, bool forceReDownload = false, AssetOS assetOS = AssetOS.Windows)
         {
+            if (!assetName.StartsWith("charui"))
+            {
+                return Forbid();
+            }
+
             var mainProgram = new MainProgram(assetOS);
             mainProgram.AssetVersion = version.ToString();
             var singleFilePath = mainProgram.getSingleTextureIfExists(assetName, forceReDownload);
