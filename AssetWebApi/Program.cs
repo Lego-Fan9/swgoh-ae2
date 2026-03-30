@@ -64,9 +64,9 @@ if (disableHttpsRedirect == null || disableHttpsRedirect != "true")
     app.UseHttpsRedirection();
 }
 
-app.UseAuthorization();
-
 app.UseCors("AllowCors");
+
+app.UseAuthorization();
 
 app.MapControllers();
 
