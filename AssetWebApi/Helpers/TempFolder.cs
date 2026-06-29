@@ -1,3 +1,5 @@
+using System.IO.Compression;
+
 namespace AssetWebApi.Helpers
 {
     public class TempFolder : IDisposable
@@ -14,6 +16,22 @@ namespace AssetWebApi.Helpers
 
             Folder = folder;
             Directory.CreateDirectory(Folder);
+        }
+
+        public MemoryStream ToZipStream()
+        {
+            var stream = new MemoryStream();
+            using (var archive = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                foreach (var file in Directory.EnumerateFiles(Folder, "*", SearchOption.AllDirectories))
+                {
+                    archive.CreateEntryFromFile(file, Path.GetRelativePath(Folder, file), CompressionLevel.Optimal);
+                }
+            }
+
+            stream.Position = 0;
+
+            return stream;
         }
 
         public void Dispose()

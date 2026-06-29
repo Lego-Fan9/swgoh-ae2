@@ -1,6 +1,5 @@
 using AssetGetterTools.models;
 using Microsoft.AspNetCore.Mvc;
-using System.IO.Compression;
 using AssetWebApi.Helpers;
 
 namespace AssetWebApi.Controllers
@@ -82,41 +81,24 @@ namespace AssetWebApi.Controllers
         /// </summary>
         /// <param name="assetName">the name of the asset to download</param>
         /// <param name="version">the assetversion. you can get it via Metadata in comlink.</param>
-        /// <param name="forceReDownload">Optional parameter (default = false). true Forces a re-download from the CG Server. Otherwise it uses the cache if possible.</param>
         /// <param name="exportSpriteAtlases">Optional parameter (default = false). true will return sprite atlases</param>
         /// <returns></returns>
         [HttpGet("zip")]
-        public FileStreamResult GetZip(string assetName, int version, bool forceReDownload = false, bool exportSpriteAtlases = false, AssetOS assetOS = AssetOS.Windows)
+        public FileStreamResult GetZip(string assetName, int version, bool exportSpriteAtlases = false, AssetOS assetOS = AssetOS.Windows)
         {
             var defaultSettings = DefaultSettings.GetDefaultSettings() ?? 
                 throw new Exception("Could not load DefaultSettings. settings.json may not exist");
-            using (var temp = new TempFolder(defaultSettings.defaultOutputDirectory))
+            using (var tempWorkingFolder = new TempFolder(defaultSettings.defaultOutputDirectory))
             {
                 var mainProgram = new MainProgram(assetOS);
                 mainProgram.AssetVersion = version.ToString();
-                mainProgram.targetFolder = temp.Folder;
+                mainProgram.targetFolder = tempWorkingFolder.Folder;
                 mainProgram.exportSpriteAtlases = exportSpriteAtlases;
-                mainProgram.getSingleTextureIfExists(assetName, forceReDownload);
+                mainProgram.getSingleTextureIfExists(assetName);
 
-                var responseStream = new MemoryStream();
-                using (var archive = new ZipArchive(responseStream, ZipArchiveMode.Create, true))
-                {
-                    var files = Directory.GetFiles(temp.Folder, "*", SearchOption.AllDirectories);
-                    foreach (var filePath in files)
-                    {
-                        var fileName = Path.GetRelativePath(temp.Folder, filePath);
-                        var archiveFile = archive.CreateEntry(fileName, CompressionLevel.Optimal);
+                var zipStream = tempWorkingFolder.ToZipStream();
 
-                        using (var archiveFileStream = archiveFile.Open())
-                        using (var fileStream = System.IO.File.OpenRead(filePath))
-                        {
-                            fileStream.CopyTo(archiveFileStream);
-                        }
-                    }
-                }
-
-                responseStream.Position = 0;
-                return File(responseStream, "application/zip", $"{assetName}.zip");
+                return File(zipStream, "application/zip", $"{assetName}.zip");
             }
         }
     }
